@@ -1,4 +1,8 @@
+const $arenas = document.querySelector('.arenas');
+const $randomButton = document.querySelector('.button');
+
 const player1 = {
+	player: 1,
 	name: 'Kitana',
 	hp: 100,
 	img: 'http://reactmarathon-api.herokuapp.com/assets/kitana.gif',
@@ -9,8 +13,9 @@ const player1 = {
 };
 
 const player2 = {
+	player: 2,
 	name: 'Sonya',
-	hp: 60,
+	hp: 100,
 	img: 'http://reactmarathon-api.herokuapp.com/assets/sonya.gif',
 	weapon: ['Автомат', 'Граната'],
 	attack: () => {
@@ -18,42 +23,86 @@ const player2 = {
 	}
 };
 
-function createPlayer(classPlayer, objPlayer) {
+function funCreateElement(tag, className) {
+	const $tag = document.createElement(tag);
+
+	if (className) {
+		$tag.classList.add(className);
+	}
+
+	return $tag;
+}
+
+function createPlayer(objPlayer) {
 	//создание родительского элемента div
-	$player1 = document.createElement('div');
-	$player1.classList.add(classPlayer);
+	$player = funCreateElement('div', 'player' + objPlayer.player);
 
 	//создание div.progressbar и div.character
-	$progressbar = document.createElement('div');
-	$progressbar.classList.add('progressbar');
-	$character = document.createElement('div');
-	$character.classList.add('character');
+	$progressbar = funCreateElement('div', 'progressbar');
+	$character = funCreateElement('div', 'character');
 
-	$player1.appendChild($progressbar);
-	$player1.appendChild($character);
+	$player.appendChild($progressbar);
+	$player.appendChild($character);
 
 	//создание div.life и div.name в div.progressbar
-	$life = document.createElement('div');
-	$life.classList.add('life');
+	$life = funCreateElement('div', 'life');
 	$life.style.width = '100%';
 
-	$name = document.createElement('div');
-	$name.classList.add('name');
+	$name = funCreateElement('div', 'name');
 	$name.innerText = objPlayer.name;
 
 	$progressbar.appendChild($life);
 	$progressbar.appendChild($name);
 
 	//создание img в div.character
-	$img = document.createElement('img');
+	$img = funCreateElement('img');
 	$img.src = objPlayer.img;
 
 	$character.appendChild($img);
 
 	//родительский элемент помещаем в div.arenas
-	$arenas = document.querySelector('.arenas');
-	$arenas.appendChild($player1);
+	return $player
 };
 
-createPlayer('player1', player1);
-createPlayer('player2', player2);
+function randomHp() {
+	let randomHp = Math.ceil(Math.random() * 20);
+
+	return randomHp;
+}
+
+function changeHP(player) {
+	const $playerLife = document.querySelector('.player' + player.player + ' .life');
+
+	player.hp -= randomHp();
+
+	if (player.hp >= 0) {
+		$playerLife.style.width = player.hp + '%';
+	} else if (player.hp < 0) {
+		if (player.player === 1) {
+			$arenas.appendChild(playerWin(player2.name))
+		} else if (player.player === 2) {
+			$arenas.appendChild(playerWin(player1.name))
+		}
+
+		$playerLife.style.width = player.hp = 0;
+		$randomButton.disabled = true;
+		setTimeout(function () {
+			location.reload();
+		}, 2000);
+	}
+}
+
+function playerWin(name) {
+	const $winTitle = funCreateElement('div', 'winTitle');
+	$winTitle.innerText = name + ' wins';
+
+	return $winTitle;
+}
+
+$randomButton.addEventListener('click', function () {
+	changeHP(player1);
+	changeHP(player2);
+});
+
+$arenas.appendChild(createPlayer(player1));
+$arenas.appendChild(createPlayer(player2));
